@@ -57,7 +57,7 @@ class AsrFlutter {
     String modelPath = '$assetPath/$modelName/model.int8.onnx';
     String tokens = '$assetPath/$modelName/tokens.txt';
     final senseVoice = sherpa_onnx.OfflineSenseVoiceModelConfig(
-        model: modelPath, useInverseTextNormalization: true,language: 'zh');
+        model: modelPath, useInverseTextNormalization: true);
 
     final modelConfig = sherpa_onnx.OfflineModelConfig(
       senseVoice: senseVoice,
