@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa_onnx;
 export 'package:path_provider/path_provider.dart';
@@ -9,7 +10,9 @@ class AsrFlutter {
       'https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2';
   final String modelName = 'sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17';
   String assetPath = '';
+  sherpa_onnx.OfflineRecognizerConfig? _offlineConfig;
   sherpa_onnx.OfflineRecognizer? _recognizer;
+  Dio? _dio;
 
   Future<bool> checkModelExist() async {
     Directory? d = await getDownloadsDirectory();
@@ -25,14 +28,36 @@ class AsrFlutter {
     return false;
   }
 
-  Future downloadModel() async {}
+  Future downloadModel() async {
+    _dio ??= Dio();
+    String modelLocalPath = '$assetPath/$modelName.tar.bz2';
+    File file = File(modelLocalPath);
+    if (file.existsSync()) {
+      file.deleteSync();
+    }
+    var res = await _dio!.download(
+      _downloadPath,
+      modelLocalPath,
+      onReceiveProgress: (count, total) {
+        print('下载进度：${(count / total * 100).toStringAsFixed(0)}%');
+      },
+    );
+    print(res);
+    /// 解压
+    List<String> tarComd = ['tar', 'xvf', modelLocalPath,'-C',assetPath];
+    print(tarComd);
+    ProcessResult tarResult =  await Process.run(tarComd[0], tarComd.skip(1).toList());
+    print('>>>: '+ tarResult.stdout);
+    List<String> rmComd = ['rm', modelLocalPath];
+    Process.runSync(rmComd[0], rmComd.skip(1).toList());
+  }
 
   void initOnnx() async {
     sherpa_onnx.initBindings();
     String modelPath = '$assetPath/$modelName/model.int8.onnx';
     String tokens = '$assetPath/$modelName/tokens.txt';
     final senseVoice = sherpa_onnx.OfflineSenseVoiceModelConfig(
-        model: modelPath, useInverseTextNormalization: true);
+        model: modelPath, useInverseTextNormalization: true,language: 'zh');
 
     final modelConfig = sherpa_onnx.OfflineModelConfig(
       senseVoice: senseVoice,
@@ -40,14 +65,13 @@ class AsrFlutter {
       debug: true,
       numThreads: 1,
     );
-    final config = sherpa_onnx.OfflineRecognizerConfig(model: modelConfig);
-    _recognizer = sherpa_onnx.OfflineRecognizer(config);
+    _offlineConfig = sherpa_onnx.OfflineRecognizerConfig(model: modelConfig);
+    _recognizer ??= sherpa_onnx.OfflineRecognizer(_offlineConfig!);
+   
   }
 
   Future<String?> AsrRecognize({required String voicePath}) async {
-    if (_recognizer == null) {
-      return null;
-    }
+    _recognizer ??= sherpa_onnx.OfflineRecognizer(_offlineConfig!);
     try {
       final waveData = sherpa_onnx.readWave(voicePath);
       final stream = _recognizer!.createStream();

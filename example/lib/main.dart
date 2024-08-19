@@ -65,10 +65,10 @@ class _MyAppState extends State<MyApp> {
 
   Future recognize() async {
     var p = await getDownloadsDirectory();
-    // String filePath = '${p?.path}/audio.wav';
-    String testPath = '${p?.path}/zh_prompt.wav';
-    String? r = await _asrFlutterPlugin.AsrRecognize(voicePath: testPath);
-    print(r);
+    String filePath = '${p?.path}/audio.wav';
+    // String testPath = '${p?.path}/zh_prompt.wav';
+    String? r = await _asrFlutterPlugin.AsrRecognize(voicePath: filePath);
+    print('>>>>: $r');
     setState(() {
       text = r ?? 'null';
     });
