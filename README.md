@@ -8,7 +8,7 @@ Asr Flutter是基于阿里开源的语音大模型[SenseVoice](https://github.co
 
 ## 选用框架
 
-- `SenseVoice-small` 234M参数, 支持中、粤、英、日、韩语的多语言语音识别
+- `SenseVoice-small` 234M参数, 支持中、粤、英、日、韩语的多语言语音识别,目前仅支持non-streaming
 - [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx): 手机端神经网络训练框架, 支持多种语言及端平台
 
 
