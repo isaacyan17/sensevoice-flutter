@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa_onnx;
 export 'package:path_provider/path_provider.dart';
+export 'package:dio/dio.dart';
 
 class AsrFlutter {
   final String _downloadPath =
